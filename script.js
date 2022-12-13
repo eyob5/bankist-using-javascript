@@ -78,7 +78,31 @@ const balance=movements.reduce(function(acc,cur,i,arr){
   return acc + cur;
 },0);
 labelBalance.textContent=balance;
-
 }
-displayMovements(account1.movements);
+const calcDisplaySummary=function(movements){
+  const incomes=movements.filter(mov=>mov>0).reduce((mov,acc)=>mov+acc,0);
+  labelSumIn.textContent=incomes; 
+  const outcomes=movements.filter(mov=>mov<0).reduce((acc,mov)=>mov + acc,0);
+  labelSumOut.textContent=Math.abs(outcomes);
+  const interest=movements
+  .filter(mov=>mov>0)
+  .map(deposit=>deposit*1.2/100)
+  .filter(int=>int>=1)
+  .reduce((acc,mov)=>acc+mov,0);
+  labelSumInterest.textContent=interest;
+}
 
+let currentaccount;
+btnLogin.addEventListener('click',function(e){
+  // const x=accounts.find(acc=>(acc.owner && acc.pin))
+  //prevent from submitting
+   e.preventDefault();
+   currentaccount=accounts.find(acc=>acc.owner===inputLoginUsername.value);
+   if(currentaccount?.pin===Number(inputLoginPin.value)){
+    labelWelcome.textContent=currentaccount.owner.split(' ')[0];
+    displayMovements(currentaccount.movements);
+    calcDisplaySummary(currentaccount.movements);
+    containerApp.style.opacity=100;
+   } //optional chaining(?)
+   }
+)
