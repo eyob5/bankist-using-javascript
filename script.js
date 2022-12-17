@@ -74,35 +74,85 @@ const displayMovements=function(movements){
    </div>`  //creating html element using template string
   containerMovements.insertAdjacentHTML("afterbegin",html);
 });
-const balance=movements.reduce(function(acc,cur,i,arr){
-  return acc + cur;
-},0);
-labelBalance.textContent=balance;
 }
-const calcDisplaySummary=function(movements){
-  const incomes=movements.filter(mov=>mov>0).reduce((mov,acc)=>mov+acc,0);
+const calcDisplayBalance=function(account){
+  account.balance=account.movements.reduce((acc,cur)=>acc+cur,0);
+  labelBalance.textContent=account.balance;
+}
+const calcDisplaySummary=function(account){
+  const incomes=account.movements.filter(mov=>mov>0).reduce((acc,mov)=>mov+acc,0);
   labelSumIn.textContent=incomes; 
-  const outcomes=movements.filter(mov=>mov<0).reduce((acc,mov)=>mov + acc,0);
+  const outcomes=account.movements.filter(mov=>mov<0).reduce((acc,mov)=>mov + acc,0);
   labelSumOut.textContent=Math.abs(outcomes);
-  const interest=movements
+  const interest=account.movements
   .filter(mov=>mov>0)
-  .map(deposit=>deposit*1.2/100)
+  .map(deposit=>deposit*account.interestRate/100)
   .filter(int=>int>=1)
   .reduce((acc,mov)=>acc+mov,0);
   labelSumInterest.textContent=interest;
 }
-
+const createUserName=function(accs){
+  accs.forEach(acc=>{
+    acc.userName=acc.owner
+    .toLowerCase().split(' ').map(names=>names[0]).join('');
+  })
+}
+createUserName(accounts);
+const updateUI=function(account){
+displayMovements(account.movements);
+calcDisplayBalance(account)
+calcDisplaySummary(account);
+}
 let currentaccount;
 btnLogin.addEventListener('click',function(e){
-  // const x=accounts.find(acc=>(acc.owner && acc.pin))
   //prevent from submitting
    e.preventDefault();
-   currentaccount=accounts.find(acc=>acc.owner===inputLoginUsername.value);
+   currentaccount=accounts.find(acc=>acc.userName===inputLoginUsername.value);
    if(currentaccount?.pin===Number(inputLoginPin.value)){
     labelWelcome.textContent=currentaccount.owner.split(' ')[0];
-    displayMovements(currentaccount.movements);
-    calcDisplaySummary(currentaccount.movements);
     containerApp.style.opacity=100;
+      inputLoginUsername.value=inputLoginPin.value='';
+      inputLoginPin.blur(); // make the pin filed to loos its focus
+   updateUI(currentaccount);
    } //optional chaining(?)
-   }
-)
+   });
+   btnTransfer.addEventListener('click',function(e){
+    e.preventDefault();
+    const amount=Number(inputTransferAmount.value);
+    const receiveracc=accounts.find(acc=>acc.userName===inputTransferTo.value);
+    inputTransferTo.value=inputTransferAmount.value='';
+    if(amount>0 &&  receiveracc && amount <= currentaccount.balance && receiveracc.userName !== currentaccount.userName){
+      receiveracc.movements.push(amount);
+      currentaccount.movements.push(-amount);
+      updateUI(currentaccount);
+    }
+  });
+  btnClose.addEventListener('click',function(e){
+    e.preventDefault();
+    if(currentaccount.userName === inputCloseUsername.value && currentaccount.pin === Number(inputClosePin.value)){
+      const index=accounts.findIndex(acc=>acc.userName === currentaccount.userName);
+      accounts.splice(index,1);
+      containerApp.style.opacity=0;
+    }
+    inputCloseUsername.value=inputClosePin.value='';
+  });
+  btnLoan.addEventListener('click',function(e){
+    e.preventDefault();
+    const amount=Number(inputLoanAmount.value);
+    if(amount >0 && currentaccount.movements.some(mov=>mov>=amount * 0.1)){
+      currentaccount.movements.push(amount);
+      updateUI(currentaccount);
+    }
+  })
+  //for flating nested array
+// const overBalance=accounts.flatMap(acc=>acc.movements).reduce((acc,mov)=>acc+mov,0);
+// console.log(overBalance);
+btnSort.addEventListener('click',function(e){
+  e.preventDefault();
+  //ascendign
+  currentaccount.movements.sort((a,b)=>a-b);
+  // currentaccount.movements.sort((a,b)=>b-a);
+  // updateUI(currentaccount);
+  displayMovements(currentaccount.movements)
+})
+
