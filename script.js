@@ -4,7 +4,7 @@
 /////////////////////////////////////////////////
 // BANKIST APP
 
-// Data
+// Data 
 //selecting dom element
 
 const account1 = {
@@ -12,6 +12,16 @@ const account1 = {
   movements: [200, 450, -400, 3000, -650, -130, 70, 1300],
   interestRate: 1.2, // %
   pin: 1111,
+  movementsDates: [
+    "2019-11-18T21:31:17.178Z",
+    "2019-12-23T07:42:02.383Z",
+    "2020-01-28T09:15:04.904Z",
+    "2020-04-01T10:17:24.185Z",
+    "2020-05-08T14:11:59.604Z",
+    "2020-07-26T17:01:17.194Z",
+    "2020-07-28T23:36:17.929Z",
+    "2020-08-01T10:51:36.790Z",
+  ],
 };
 
 const account2 = {
@@ -19,6 +29,16 @@ const account2 = {
   movements: [5000, 3400, -150, -790, -3210, -1000, 8500, -30],
   interestRate: 1.5,
   pin: 2222,
+  movementsDates: [
+    "2019-11-18T21:31:17.178Z",
+    "2019-12-23T07:42:02.383Z",
+    "2020-01-28T09:15:04.904Z",
+    "2020-04-01T10:17:24.185Z",
+    "2020-05-08T14:11:59.604Z",
+    "2020-07-26T17:01:17.194Z",
+    "2020-07-28T23:36:17.929Z",
+    "2020-08-01T10:51:36.790Z",
+  ],
 };
 
 const account3 = {
@@ -26,6 +46,16 @@ const account3 = {
   movements: [200, -200, 340, -300, -20, 50, 400, -460],
   interestRate: 0.7,
   pin: 3333,
+  movementsDates: [
+    "2019-11-18T21:31:17.178Z",
+    "2019-12-23T07:42:02.383Z",
+    "2020-01-28T09:15:04.904Z",
+    "2020-04-01T10:17:24.185Z",
+    "2020-05-08T14:11:59.604Z",
+    "2020-07-26T17:01:17.194Z",
+    "2020-07-28T23:36:17.929Z",
+    "2020-08-01T10:51:36.790Z",
+  ],
 };
 
 const account4 = {
@@ -33,6 +63,16 @@ const account4 = {
   movements: [430, 1000, 700, 50, 90],
   interestRate: 1,
   pin: 4444,
+  movementsDates: [
+    "2019-11-18T21:31:17.178Z",
+    "2019-12-23T07:42:02.383Z",
+    "2020-01-28T09:15:04.904Z",
+    "2020-04-01T10:17:24.185Z",
+    "2020-05-08T14:11:59.604Z",
+    "2020-07-26T17:01:17.194Z",
+    "2020-07-28T23:36:17.929Z",
+    "2020-08-01T10:51:36.790Z",
+  ],
 };
 
 const accounts = [account1, account2, account3, account4];
@@ -63,33 +103,48 @@ const inputLoanAmount = document.querySelector('.form__input--loan-amount');
 const inputCloseUsername = document.querySelector('.form__input--user');
 const inputClosePin = document.querySelector('.form__input--pin');
 
-const displayMovements=function(movements){
+const formatMovementDate=function(date){
+  const caldate=(date1,date2)=>Math.round(Math.abs(date1-date2)/(1000 * 60 * 60 * 24));
+  console.log(caldate(new Date(),date));
+  const day=`${date.getDay()}`.padStart(2,0);
+  const month=`${date.getMonth() + 1}`.padStart(2,0);
+  const year=date.getFullYear();
+  return `${day}/${month}/${year}`;
+}
+const displayMovements=function(acc){
   containerMovements.innerHTML='';
-  movements.forEach(function(mov,index){
+  acc.movements.forEach(function(mov,index){
+    const date=new Date(acc.movementsDates[index]);
+    const displayDate=formatMovementDate(date);
     const type=mov>0?'deposit':'withdrawal';
   const html=`<div class="movements__row">
     <div class="movements__type movements__type--${type}">${index +1} ${type}</div>
-    <div class="movements__date">3 days ago</div>
-    <div class="movements__value">${mov}€</div>
+    <div class="movements__date">${displayDate}</div>
+    <div class="movements__value">${mov.toFixed(2)}€</div>
    </div>`  //creating html element using template string
   containerMovements.insertAdjacentHTML("afterbegin",html);
 });
+const now=new Date();
+const month=`${now.getMonth() + 1}`.padStart(2,0);
+const day=`${now.getDay()}`.padStart(2,0);
+const year=now.getFullYear();
+labelDate.textContent=`${day}/${month}/${year}`;
 }
 const calcDisplayBalance=function(account){
   account.balance=account.movements.reduce((acc,cur)=>acc+cur,0);
-  labelBalance.textContent=account.balance;
+  labelBalance.textContent=account.balance.toFixed(2);
 }
 const calcDisplaySummary=function(account){
   const incomes=account.movements.filter(mov=>mov>0).reduce((acc,mov)=>mov+acc,0);
-  labelSumIn.textContent=incomes; 
+  labelSumIn.textContent=incomes.toFixed(2); 
   const outcomes=account.movements.filter(mov=>mov<0).reduce((acc,mov)=>mov + acc,0);
-  labelSumOut.textContent=Math.abs(outcomes);
+  labelSumOut.textContent=Math.abs(outcomes).toFixed(2);
   const interest=account.movements
   .filter(mov=>mov>0)
   .map(deposit=>deposit*account.interestRate/100)
   .filter(int=>int>=1)
   .reduce((acc,mov)=>acc+mov,0);
-  labelSumInterest.textContent=interest;
+  labelSumInterest.textContent=interest.toFixed(2);
 }
 const createUserName=function(accs){
   accs.forEach(acc=>{
@@ -99,7 +154,7 @@ const createUserName=function(accs){
 }
 createUserName(accounts);
 const updateUI=function(account){
-displayMovements(account.movements);
+displayMovements(account);
 calcDisplayBalance(account)
 calcDisplaySummary(account);
 }
@@ -124,6 +179,8 @@ btnLogin.addEventListener('click',function(e){
     if(amount>0 &&  receiveracc && amount <= currentaccount.balance && receiveracc.userName !== currentaccount.userName){
       receiveracc.movements.push(amount);
       currentaccount.movements.push(-amount);
+      currentaccount.movementsDates.push(new Date());
+      receiveracc.movementsDates.push(new Date());
       updateUI(currentaccount);
     }
   });
@@ -138,14 +195,16 @@ btnLogin.addEventListener('click',function(e){
   });
   btnLoan.addEventListener('click',function(e){
     e.preventDefault();
-    const amount=Number(inputLoanAmount.value);
+    const amount=Math.floor(inputLoanAmount.value);
     if(amount >0 && currentaccount.movements.some(mov=>mov>=amount * 0.1)){
       currentaccount.movements.push(amount);
+      currentaccount.movementsDates.push(new Date());
       updateUI(currentaccount);
     }
   })
   //for flating nested array
 // const overBalance=accounts.flatMap(acc=>acc.movements).reduce((acc,mov)=>acc+mov,0);
+// const overBalance=accounts.map(acc=>acc.movements);
 // console.log(overBalance);
 btnSort.addEventListener('click',function(e){
   e.preventDefault();
@@ -153,6 +212,5 @@ btnSort.addEventListener('click',function(e){
   currentaccount.movements.sort((a,b)=>a-b);
   // currentaccount.movements.sort((a,b)=>b-a);
   // updateUI(currentaccount);
-  displayMovements(currentaccount.movements)
+  displayMovements(currentaccount)
 })
-
