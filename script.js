@@ -13,14 +13,14 @@ const account1 = {
   interestRate: 1.2, // %
   pin: 1111,
   movementsDates: [
-    "2019-11-18T21:31:17.178Z",
-    "2019-12-23T07:42:02.383Z",
-    "2020-01-28T09:15:04.904Z",
-    "2020-04-01T10:17:24.185Z",
-    "2020-05-08T14:11:59.604Z",
-    "2020-07-26T17:01:17.194Z",
-    "2020-07-28T23:36:17.929Z",
-    "2020-08-01T10:51:36.790Z",
+    "Fri Jan 2 2023 21:40:05 GMT-0800",
+    "Fri Jan 13 2023 13:40:05 GMT-0800",
+    "Fri Jan 3 2023 21:40:05 GMT-0800",
+    "Fri Jan 3 2023 21:40:05 GMT-0800",
+    "Fri Jan 6 2023 21:40:05 GMT-0800",
+    "Fri Jan 8 2023 21:40:05 GMT-0800",
+    "Fri Jan 11 2023 21:40:05 GMT-0800",
+    "Fri Jan 12 2023 21:40:05 GMT-0800",
   ],
 };
 
@@ -31,11 +31,11 @@ const account2 = {
   pin: 2222,
   movementsDates: [
     "2019-11-18T21:31:17.178Z",
-    "2019-12-23T07:42:02.383Z",
+    "2019-12-13T07:42:02.383Z",
     "2020-01-28T09:15:04.904Z",
     "2020-04-01T10:17:24.185Z",
     "2020-05-08T14:11:59.604Z",
-    "2020-07-26T17:01:17.194Z",
+    "2020-07-16T17:01:17.194Z",
     "2020-07-28T23:36:17.929Z",
     "2020-08-01T10:51:36.790Z",
   ],
@@ -48,11 +48,11 @@ const account3 = {
   pin: 3333,
   movementsDates: [
     "2019-11-18T21:31:17.178Z",
-    "2019-12-23T07:42:02.383Z",
+    "2019-12-13T07:42:02.383Z",
     "2020-01-28T09:15:04.904Z",
     "2020-04-01T10:17:24.185Z",
     "2020-05-08T14:11:59.604Z",
-    "2020-07-26T17:01:17.194Z",
+    "2020-07-16T17:01:17.194Z",
     "2020-07-28T23:36:17.929Z",
     "2020-08-01T10:51:36.790Z",
   ],
@@ -65,11 +65,11 @@ const account4 = {
   pin: 4444,
   movementsDates: [
     "2019-11-18T21:31:17.178Z",
-    "2019-12-23T07:42:02.383Z",
+    "2019-12-13T07:42:02.383Z",
     "2020-01-28T09:15:04.904Z",
     "2020-04-01T10:17:24.185Z",
     "2020-05-08T14:11:59.604Z",
-    "2020-07-26T17:01:17.194Z",
+    "2020-07-16T17:01:17.194Z",
     "2020-07-28T23:36:17.929Z",
     "2020-08-01T10:51:36.790Z",
   ],
@@ -105,12 +105,33 @@ const inputClosePin = document.querySelector('.form__input--pin');
 
 const formatMovementDate=function(date){
   const caldate=(date1,date2)=>Math.round(Math.abs(date1-date2)/(1000 * 60 * 60 * 24));
-  console.log(caldate(new Date(),date));
+  const daysPassed=caldate(new Date(),date);
+    if(daysPassed===0) return 'Today';;
+    if(daysPassed===1)  return 'Yestreday';
+    if(daysPassed<=7) return `${daysPassed} days ago`;
+    else{
   const day=`${date.getDay()}`.padStart(2,0);
   const month=`${date.getMonth() + 1}`.padStart(2,0);
   const year=date.getFullYear();
   return `${day}/${month}/${year}`;
+    }
 }
+const startLogOutTimer=function(){
+  let time=120;
+  const timer=function(){
+    const min=String(Math.trunc(time/60)).padStart(2,0);
+    const sec=String(time%60).padStart(2,0);
+    labelTimer.textContent=`${min}:${sec}`;
+    if(time===0){
+      clearInterval(stime);
+      containerApp.style.opacity=0;
+    }
+    time--;
+  };
+  timer();
+  const stime=setInterval(timer,1000);
+  return stime;
+};
 const displayMovements=function(acc){
   containerMovements.innerHTML='';
   acc.movements.forEach(function(mov,index){
@@ -128,7 +149,9 @@ const now=new Date();
 const month=`${now.getMonth() + 1}`.padStart(2,0);
 const day=`${now.getDay()}`.padStart(2,0);
 const year=now.getFullYear();
-labelDate.textContent=`${day}/${month}/${year}`;
+const min=`${now.getMinutes()}`.padStart(2,0);
+const hours=`${now.getHours()}`.padStart(2,0);
+labelDate.textContent=`${day}/${month}/${year},${hours}:${min}`;
 }
 const calcDisplayBalance=function(account){
   account.balance=account.movements.reduce((acc,cur)=>acc+cur,0);
@@ -158,18 +181,24 @@ displayMovements(account);
 calcDisplayBalance(account)
 calcDisplaySummary(account);
 }
-let currentaccount;
+let currentaccount,times;
+// currentaccount=account1;
+// updateUI(currentaccount);
+// containerApp.style.opacity=100;
+
 btnLogin.addEventListener('click',function(e){
   //prevent from submitting
    e.preventDefault();
    currentaccount=accounts.find(acc=>acc.userName===inputLoginUsername.value);
    if(currentaccount?.pin===Number(inputLoginPin.value)){
-    labelWelcome.textContent=currentaccount.owner.split(' ')[0];
+    labelWelcome.textContent=`Welcome ${currentaccount.owner.split(' ')[0]}`;
     containerApp.style.opacity=100;
       inputLoginUsername.value=inputLoginPin.value='';
       inputLoginPin.blur(); // make the pin filed to loos its focus
+      if(times) clearInterval(times);
+      times=startLogOutTimer();
    updateUI(currentaccount);
-   } //optional chaining(?)
+   } 
    });
    btnTransfer.addEventListener('click',function(e){
     e.preventDefault();
@@ -182,6 +211,8 @@ btnLogin.addEventListener('click',function(e){
       currentaccount.movementsDates.push(new Date());
       receiveracc.movementsDates.push(new Date());
       updateUI(currentaccount);
+      clearInterval(times);
+      times=startLogOutTimer();
     }
   });
   btnClose.addEventListener('click',function(e){
@@ -196,11 +227,14 @@ btnLogin.addEventListener('click',function(e){
   btnLoan.addEventListener('click',function(e){
     e.preventDefault();
     const amount=Math.floor(inputLoanAmount.value);
-    if(amount >0 && currentaccount.movements.some(mov=>mov>=amount * 0.1)){
-      currentaccount.movements.push(amount);
-      currentaccount.movementsDates.push(new Date());
-      updateUI(currentaccount);
-    }
+    if(amount >0 && currentaccount.movements.some(mov=>mov>=amount * 0.1))
+      setTimeout(()=>{
+        currentaccount.movements.push(amount);
+        currentaccount.movementsDates.push(new Date());
+        updateUI(currentaccount);
+        clearInterval(times);
+        times=startLogOutTimer();
+    },2500);
   })
   //for flating nested array
 // const overBalance=accounts.flatMap(acc=>acc.movements).reduce((acc,mov)=>acc+mov,0);
@@ -210,7 +244,5 @@ btnSort.addEventListener('click',function(e){
   e.preventDefault();
   //ascendign
   currentaccount.movements.sort((a,b)=>a-b);
-  // currentaccount.movements.sort((a,b)=>b-a);
-  // updateUI(currentaccount);
   displayMovements(currentaccount)
 })
