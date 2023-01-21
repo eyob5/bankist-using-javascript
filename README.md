@@ -1,5 +1,5 @@
 # bankist-using-javascript
-##3 There is four users having username and pin which is,
+### There is four users having username and pin which is,
 #### 1, Jonas Schmedtmann.........user=js and pin=1111
 #### 2,Jessica Davis..............user=jd and pin=2222 
 #### 3,Steven Thomas Williams.....user=stw and pin=3333
